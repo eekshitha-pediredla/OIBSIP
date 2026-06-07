@@ -11,7 +11,13 @@ import time
 import logging
 from typing import Optional
 from gtts import gTTS
-import playsound
+
+try:
+    import playsound
+    PLAYSOUND_AVAILABLE = True
+except ImportError:
+    PLAYSOUND_AVAILABLE = False
+
 
 # Handle pyttsx3 import error or missing driver
 try:
@@ -149,14 +155,17 @@ class VoiceOutputManager:
             self._speak_online(text)
 
     def _speak_online(self, text: str):
-        """Synthesizes online speech using gTTS and plays it via playsound."""
+        """Synthesizes online speech using gTTS and plays it via playsound if available."""
         temp_audio = "temp_voice_output.mp3"
         try:
             tts = gTTS(text=text, lang='en', slow=False)
             tts.save(temp_audio)
             
-            # Use playsound to play the mp3
-            playsound.playsound(temp_audio)
+            # Use playsound to play the mp3 if available
+            if PLAYSOUND_AVAILABLE:
+                playsound.playsound(temp_audio)
+            else:
+                logger.info("playsound module not available. Audio output only printed to terminal.")
         except Exception as e:
             logger.error(f"Online text-to-speech failed: {e}. Speech output only printed to terminal.")
         finally:
